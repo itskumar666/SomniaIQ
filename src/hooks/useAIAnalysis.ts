@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { diaOracle, PriceData } from '@/lib/diaOracle';
 import { portfolioManager, Portfolio, Asset, RebalanceRecommendation, RiskMetrics } from '@/lib/portfolioManager';
+import { contractService } from '@/lib/contractService';
+import { useActiveAccount } from 'thirdweb/react';
 
 interface MarketData {
   timestamp: number;
@@ -29,6 +31,9 @@ export const useAIAnalysis = () => {
   const [portfolioData, setPortfolioData] = useState<EnhancedPortfolioData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contractAnalysis, setContractAnalysis] = useState<any>(null);
+  
+  const account = useActiveAccount();
 
   // Fetch real market data from DIA Oracle
   const fetchMarketData = useCallback(async (): Promise<MarketData> => {
@@ -106,6 +111,39 @@ export const useAIAnalysis = () => {
   };
 
   const runAnalysis = useCallback(async (userBalances: Record<string, number>) => {
+    const submitAnalysisToContract = async (aiAnalysis: AIAnalysis, userAddress: string) => {
+      if (!account) return;
+      
+      try {
+        // Convert AI analysis to contract format
+        const riskLevelMap = { 'Low': 1, 'Medium': 2, 'High': 3 };
+        const riskLevel = riskLevelMap[aiAnalysis.riskLevel];
+        
+        const result = await contractService.submitAIAnalysisToChain(
+          userAddress,
+          aiAnalysis.sentiment,
+          riskLevel,
+          aiAnalysis.recommendation,
+          aiAnalysis.confidence,
+          aiAnalysis.analysis,
+          account
+        );
+        
+        setContractAnalysis({
+          submitted: true,
+          txHash: result.transactionHash,
+          timestamp: Date.now()
+        });
+        
+        console.log('Analysis submitted to contract:', result.transactionHash);
+      } catch (error) {
+        console.error('Contract submission error:', error);
+        setContractAnalysis({
+          submitted: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    };
     setIsLoading(true);
     setError(null);
     
@@ -134,6 +172,16 @@ export const useAIAnalysis = () => {
       
       if (result.success) {
         setAnalysis(result.analysis);
+        
+        // Submit analysis to smart contract if user is connected
+        if (account && result.analysis) {
+          try {
+            await submitAnalysisToContract(result.analysis, account.address);
+          } catch (contractError) {
+            console.log('Contract submission failed:', contractError);
+            // Don't fail the whole analysis if contract submission fails
+          }
+        }
       } else {
         // Use fallback analysis if AI fails
         setAnalysis(result.fallback);
@@ -157,7 +205,7 @@ export const useAIAnalysis = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchMarketData, createPortfolioFromBalances]);
+  }, [fetchMarketData, createPortfolioFromBalances, account]);
 
   // Auto-fetch market data on mount
   useEffect(() => {
@@ -168,6 +216,7 @@ export const useAIAnalysis = () => {
     analysis,
     marketData,
     portfolioData,
+    contractAnalysis,
     isLoading,
     error,
     runAnalysis,

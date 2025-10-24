@@ -6,7 +6,7 @@ export const client = createThirdwebClient({
 
 // Somnia Shannon Testnet configuration
 export const somniaTestnet = {
-  id: 50311,
+  id: 50312,
   name: "Somnia Shannon Testnet",
   nativeCurrency: {
     name: "STT",
@@ -15,13 +15,13 @@ export const somniaTestnet = {
   },
   rpcUrls: {
     default: {
-      http: ["https://dream-rpc.somnia.network/"],
+      http: ["https://dream-rpc.somnia.network"],
     },
   },
   blockExplorers: {
     default: {
       name: "Somnia Explorer",
-      url: "https://explorer.somnia.network/",
+      url: "https://browser.somnia.network",
     },
   },
   testnet: true,

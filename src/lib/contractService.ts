@@ -2,22 +2,22 @@ import { getContract, prepareContractCall, readContract, sendTransaction } from 
 import { defineChain } from "thirdweb/chains";
 import { client, somniaTestnet } from "@/lib/thirdweb";
 
-// Contract addresses (will be updated after deployment)
+// Contract addresses (deployed on Somnia Shannon Testnet)
 export const CONTRACT_ADDRESSES = {
-  AI_ORACLE: "0x742d35Cc6634C0532925a3b8D48C405e764F23BC", // Placeholder
-  PORTFOLIO_MANAGER: "0x96b8d8eC7DAb7503f91fD5A0c9be4E5A08b9036C", // Placeholder
+  AI_ORACLE: "0x3282abB702F8c70725B2449938589c40Cab962Da", // Deployed AIOracle
+  PORTFOLIO_MANAGER: "0x908be11922c8A217467D2e7e87E48C007E2a04Fe", // Deployed DeFiDecisionMaker
 } as const;
 
 // Somnia testnet with proper RPC configuration
 const somniaChain = defineChain({
-  id: 50311,
+  id: 50312,
   name: "Somnia Shannon Testnet",
   nativeCurrency: { name: "STT", symbol: "STT", decimals: 18 },
   rpcUrls: {
-    default: { http: ["https://rpc-testnet.somnia.network"] },
+    default: { http: ["https://dream-rpc.somnia.network"] },
   },
   blockExplorers: {
-    default: { name: "Somnia Explorer", url: "https://explorer-testnet.somnia.network" },
+    default: { name: "Somnia Explorer", url: "https://browser.somnia.network" },
   },
   testnet: true,
 });

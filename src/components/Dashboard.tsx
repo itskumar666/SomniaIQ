@@ -2,14 +2,29 @@
 
 import { useState, useEffect } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
-import { client, somniaTestnet } from "@/lib/thirdweb";
+import { client } from "@/lib/thirdweb";
+import { defineChain } from "thirdweb/chains";
+import { CONTRACT_ADDRESSES } from "@/lib/contractService";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import AIDemoPanel from "./AIDemoPanel";
 import PortfolioDashboard from "./PortfolioDashboard";
+import ContractStatus from "./ContractStatus";
+import DeploymentInfo from "./DeploymentInfo";
+
+// Proper Somnia testnet chain definition for ConnectButton
+const somniaChain = defineChain({
+  id: 50312,
+  rpc: "https://dream-rpc.somnia.network",
+  nativeCurrency: {
+    name: "STT",
+    symbol: "STT", 
+    decimals: 18,
+  },
+});
 
 export default function Dashboard() {
   const account = useActiveAccount();
-  const { analysis, isLoading, error, runAnalysis } = useAIAnalysis();
+  const { analysis, contractAnalysis, isLoading, error, runAnalysis } = useAIAnalysis();
   
   // Mock user balances - this would come from wallet/blockchain in production
   const userBalances = {
@@ -28,19 +43,21 @@ export default function Dashboard() {
       {/* Header */}
       <header className="text-center mb-12">
         <h1 className="text-5xl font-bold text-white mb-4">
-          DeFi Decision Maker
+          SomniaIQ
         </h1>
         <p className="text-xl text-gray-300 mb-8">
-          AI-driven portfolio optimization on Somnia
+          AI-Powered DeFi Portfolio Manager on Somnia
         </p>
         
         {/* Wallet Connection */}
         <div className="flex justify-center">
           <ConnectButton
             client={client}
+            chain={somniaChain}
             appMetadata={{
-              name: "DeFi Decision Maker",
-              url: "https://defi-decision-maker.vercel.app",
+              name: "SomniaIQ",
+              url: "https://somniaiq.vercel.app",
+              description: "AI-Powered DeFi Portfolio Manager",
             }}
           />
         </div>
@@ -57,8 +74,13 @@ export default function Dashboard() {
             <PortfolioDashboard userBalances={userBalances} />
           </div>
 
-          {/* AI Analysis Panel */}
-          <div>
+          {/* Side Panel */}
+          <div className="space-y-6">
+            {/* Deployment Info */}
+            <DeploymentInfo />
+            
+            {/* Contract Status */}
+            <ContractStatus />            {/* AI Analysis Panel */}
             <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 mb-6">
               <h2 className="text-2xl font-semibold text-white mb-4">
                 🤖 AI Analysis
@@ -105,6 +127,16 @@ export default function Dashboard() {
                 </button>
                 {error && (
                   <p className="text-orange-400 text-sm">{error}</p>
+                )}
+                {contractAnalysis?.submitted && (
+                  <div className="text-green-400 text-xs">
+                    ✅ Analysis stored on-chain
+                  </div>
+                )}
+                {contractAnalysis?.error && (
+                  <div className="text-yellow-400 text-xs">
+                    ⚠️ Contract submission failed (analysis still available)
+                  </div>
                 )}
               </div>
               {analysis?.analysis && (
@@ -164,11 +196,14 @@ export default function Dashboard() {
               Connect Your Wallet
             </h2>
             <p className="text-gray-300 mb-6">
-              Connect your wallet to start using the DeFi Decision Maker AI agent
+              Connect your wallet to start using SomniaIQ AI-powered portfolio management
             </p>
-            <p className="text-sm text-gray-400">
-              Connected wallet: {account ? "Connected" : "None"}
-            </p>
+            <div className="space-y-2 text-sm text-gray-400">
+              <p>🌐 Network: Somnia Shannon Testnet (Chain ID: 50312)</p>
+              <p>📱 Status: {account ? "✅ Connected" : "❌ Not Connected"}</p>
+              <p>🤖 AI Oracle: {CONTRACT_ADDRESSES.AI_ORACLE}</p>
+              <p>💼 Portfolio Manager: {CONTRACT_ADDRESSES.PORTFOLIO_MANAGER}</p>
+            </div>
           </div>
         </div>
       )}

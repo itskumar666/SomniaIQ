@@ -1,0 +1,18 @@
+# Foundry build artifacts
+out/
+cache/
+broadcast/
+
+# Environment variables
+.env
+
+# Node modules (if any)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

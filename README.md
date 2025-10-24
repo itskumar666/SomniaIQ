@@ -1,6 +1,14 @@
-# DeFi Decision Maker
+# 🌟 SomniaIQ - AI-Powered DeFi Portfolio Manager
 
-An # SomniaIQ - AI-Powered DeFi Portfolio Manager
+[![Somnia Hackathon](https://img.shields.io/badge/Somnia-AI%20Hackathon-blue)](https://dorahacks.io/buidl)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Thirdweb](https://img.shields.io/badge/Thirdweb-v5-purple)](https://thirdweb.com/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://somniaiq.vercel.app)
+
+**🚀 Intelligent DeFi Portfolio Management powered by AI on Somnia Blockchain**
+
+SomniaIQ is an advanced AI-driven DeFi portfolio manager that leverages cutting-edge artificial intelligence to analyze market trends, predict asset performance, and provide intelligent portfolio management recommendations. Built specifically for the Somnia ecosystem with seamless integration and gasless transactions.
 
 🚀 **Intelligent DeFi Portfolio Management on Somnia Blockchain**
 
@@ -182,10 +190,15 @@ const balance = await contractService.getPortfolioBalanceFromChain(
 ## 🌊 Somnia Integration
 
 ### Network Configuration
-- **Chain ID**: 50311 (Shannon Testnet)
-- **RPC URL**: https://rpc-testnet.somnia.network
-- **Explorer**: https://explorer-testnet.somnia.network
+- **Chain ID**: 50312 (Shannon Testnet)
+- **RPC URL**: https://dream-rpc.somnia.network
+- **Explorer**: https://browser.somnia.network
 - **Native Token**: STT (Somnia Test Token)
+
+### Deployed Contracts
+- **AI Oracle**: `0x3282abB702F8c70725B2449938589c40Cab962Da`
+- **Portfolio Manager**: `0x908be11922c8A217467D2e7e87E48C007E2a04Fe`
+- **Contract Verification**: Available on Somnia Explorer
 
 ### Key Benefits
 - **Fast Finality**: Sub-second transaction confirmation
