@@ -39,15 +39,17 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 min-h-screen" style={{ color: 'white' }}>
       {/* Header */}
       <header className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-white mb-4">
-          SomniaIQ
-        </h1>
-        <p className="text-xl text-gray-300 mb-8">
-          AI-Powered DeFi Portfolio Manager on Somnia
-        </p>
+        <div className="mb-6">
+          <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
+            SomniaIQ
+          </h1>
+          <p className="text-xl text-gray-300 mb-8">
+            AI-Powered DeFi Portfolio Manager on Somnia
+          </p>
+        </div>
         
         {/* Wallet Connection */}
         <div className="flex justify-center">
