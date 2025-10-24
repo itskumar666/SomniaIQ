@@ -1,0 +1,172 @@
+import { createThirdwebClient } from "thirdweb";
+import { defineChain } from "thirdweb/chains";
+import { privateKeyToAccount } from "thirdweb/wallets";
+import { deployContract } from "thirdweb/deploys";
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Initialize Thirdweb client
+const client = createThirdwebClient({
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
+});
+
+// Define Somnia chain
+const somniaTestnet = defineChain({
+  id: 50311,
+  name: "Somnia Shannon Testnet",
+  nativeCurrency: { name: "STT", symbol: "STT", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://rpc-testnet.somnia.network"] },
+  },
+  blockExplorers: {
+    default: { name: "Somnia Explorer", url: "https://explorer-testnet.somnia.network" },
+  },
+  testnet: true,
+});
+
+async function deployContracts() {
+  try {
+    // Check for private key
+    const privateKey = process.env.DEPLOY_PRIVATE_KEY;
+    if (!privateKey) {
+      console.error("❌ DEPLOY_PRIVATE_KEY environment variable not set");
+      process.exit(1);
+    }
+
+    const account = privateKeyToAccount({
+      client,
+      privateKey: privateKey as `0x${string}`,
+    });
+
+    console.log("🚀 Starting deployment to Somnia Shannon Testnet...");
+    console.log("📍 Deploying from account:", account.address);
+
+    // Read contract source files
+    const aiOracleSource = fs.readFileSync(
+      path.join(__dirname, '../contracts/AIOracle.sol'),
+      'utf8'
+    );
+
+    const portfolioManagerSource = fs.readFileSync(
+      path.join(__dirname, '../contracts/DeFiDecisionMaker.sol'),
+      'utf8'
+    );
+
+    console.log("\n📄 Contract sources loaded successfully");
+
+    // Deploy AI Oracle contract
+    console.log("\n🔄 Deploying AIOracle contract...");
+    const aiOracleAddress = await deployContract({
+      client,
+      chain: somniaTestnet,
+      account,
+      bytecode: aiOracleSource, // This would need to be compiled bytecode
+      constructorParams: [],
+    });
+
+    console.log("✅ AIOracle deployed at:", aiOracleAddress);
+
+    // Deploy Portfolio Manager contract  
+    console.log("\n🔄 Deploying DeFiDecisionMaker contract...");
+    const portfolioManagerAddress = await deployContract({
+      client,
+      chain: somniaTestnet,
+      account,
+      bytecode: portfolioManagerSource, // This would need to be compiled bytecode
+      constructorParams: [aiOracleAddress], // Pass AI Oracle address to constructor
+    });
+
+    console.log("✅ DeFiDecisionMaker deployed at:", portfolioManagerAddress);
+
+    // Update contract addresses in the service file
+    const contractServicePath = path.join(__dirname, '../src/lib/contractService.ts');
+    let contractServiceContent = fs.readFileSync(contractServicePath, 'utf8');
+
+    contractServiceContent = contractServiceContent.replace(
+      'AI_ORACLE: "0x742d35Cc6634C0532925a3b8D48C405e764F23BC", // Placeholder',
+      `AI_ORACLE: "${aiOracleAddress}",`
+    );
+
+    contractServiceContent = contractServiceContent.replace(
+      'PORTFOLIO_MANAGER: "0x96b8d8eC7DAb7503f91fD5A0c9be4E5A08b9036C", // Placeholder',
+      `PORTFOLIO_MANAGER: "${portfolioManagerAddress}",`
+    );
+
+    fs.writeFileSync(contractServicePath, contractServiceContent);
+
+    console.log("\n🎉 Deployment completed successfully!");
+    console.log("📋 Summary:");
+    console.log(`   AIOracle: ${aiOracleAddress}`);
+    console.log(`   DeFiDecisionMaker: ${portfolioManagerAddress}`);
+    console.log(`   Network: Somnia Shannon Testnet (Chain ID: 50311)`);
+    console.log("   Contract addresses updated in contractService.ts");
+
+  } catch (error) {
+    console.error("❌ Deployment failed:", error);
+    process.exit(1);
+  }
+}
+
+// Alternative manual deployment function
+async function manualDeploymentInstructions() {
+  console.log(`
+🔧 MANUAL DEPLOYMENT INSTRUCTIONS
+
+Since automated deployment requires compiled bytecode, here are the steps to deploy manually:
+
+1. Install Foundry (if not already installed):
+   curl -L https://foundry.paradigm.xyz | bash
+   foundryup
+
+2. Initialize a Foundry project in the contracts directory:
+   cd contracts
+   forge init --no-git
+   
+3. Copy the contract files to src/:
+   cp AIOracle.sol src/
+   cp DeFiDecisionMaker.sol src/
+   
+4. Create foundry.toml configuration:
+   [profile.default]
+   src = "src"
+   out = "out"
+   libs = ["lib"]
+   solc_version = "0.8.19"
+   
+   [rpc_endpoints]
+   somnia = "https://rpc-testnet.somnia.network"
+   
+5. Compile contracts:
+   forge build
+   
+6. Deploy AIOracle first:
+   forge create src/AIOracle.sol:AIOracle \\
+     --rpc-url https://rpc-testnet.somnia.network \\
+     --private-key YOUR_PRIVATE_KEY
+     
+7. Deploy DeFiDecisionMaker with AIOracle address:
+   forge create src/DeFiDecisionMaker.sol:DeFiDecisionMaker \\
+     --rpc-url https://rpc-testnet.somnia.network \\
+     --private-key YOUR_PRIVATE_KEY \\
+     --constructor-args AI_ORACLE_ADDRESS
+     
+8. Update the contract addresses in src/lib/contractService.ts
+
+🔑 Environment Variables Needed:
+   - DEPLOY_PRIVATE_KEY: Your private key for deployment
+   - NEXT_PUBLIC_THIRDWEB_CLIENT_ID: Your Thirdweb client ID
+
+🌐 Somnia Testnet Details:
+   - Chain ID: 50311
+   - RPC: https://rpc-testnet.somnia.network
+   - Explorer: https://explorer-testnet.somnia.network
+   - Native Token: STT (Somnia Test Token)
+  `);
+}
+
+// Run deployment or show manual instructions
+if (process.argv.includes('--manual')) {
+  manualDeploymentInstructions();
+} else {
+  deployContracts();
+}
