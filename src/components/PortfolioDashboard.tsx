@@ -9,12 +9,10 @@ interface PortfolioDashboardProps {
 
 export default function PortfolioDashboard({ userBalances }: PortfolioDashboardProps) {
   const { portfolioData, marketData, isLoading, runAnalysis } = useAIAnalysis();
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false); // Disabled by default to prevent permission loops
 
-  useEffect(() => {
-    // Initial analysis
-    runAnalysis(userBalances);
-  }, [userBalances, runAnalysis]);
+  // Removed automatic initial analysis to prevent permission loops
+  // Users can manually trigger analysis using the button
 
   useEffect(() => {
     if (!autoRefresh) return;

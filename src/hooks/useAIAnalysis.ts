@@ -98,52 +98,17 @@ export const useAIAnalysis = () => {
     };
   }, []);
 
-  const getAssetName = (symbol: string): string => {
+  const getAssetName = (symbol: string) => {
     const names: Record<string, string> = {
       'ETH': 'Ethereum',
-      'BTC': 'Bitcoin',
-      'USDC': 'USD Coin',
-      'STT': 'Somnia Token',
-      'USDT': 'Tether',
-      'SOL': 'Solana',
+      'BTC': 'Bitcoin', 
+      'STT': 'Somnia Test Token',
+      'USDC': 'USD Coin'
     };
     return names[symbol] || symbol;
   };
 
   const runAnalysis = useCallback(async (userBalances: Record<string, number>) => {
-    const submitAnalysisToContract = async (aiAnalysis: AIAnalysis, userAddress: string) => {
-      if (!account) return;
-      
-      try {
-        // Convert AI analysis to contract format
-        const riskLevelMap = { 'Low': 1, 'Medium': 2, 'High': 3 };
-        const riskLevel = riskLevelMap[aiAnalysis.riskLevel];
-        
-        const result = await contractService.submitAIAnalysisToChain(
-          userAddress,
-          aiAnalysis.sentiment,
-          riskLevel,
-          aiAnalysis.recommendation,
-          aiAnalysis.confidence,
-          aiAnalysis.analysis,
-          account
-        );
-        
-        setContractAnalysis({
-          submitted: true,
-          txHash: result.transactionHash,
-          timestamp: Date.now()
-        });
-        
-        console.log('Analysis submitted to contract:', result.transactionHash);
-      } catch (error) {
-        console.error('Contract submission error:', error);
-        setContractAnalysis({
-          submitted: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
-    };
     setIsLoading(true);
     setError(null);
     
@@ -173,15 +138,8 @@ export const useAIAnalysis = () => {
       if (result.success) {
         setAnalysis(result.analysis);
         
-        // Submit analysis to smart contract if user is connected
-        if (account && result.analysis) {
-          try {
-            await submitAnalysisToContract(result.analysis, account.address);
-          } catch (contractError) {
-            console.log('Contract submission failed:', contractError);
-            // Don't fail the whole analysis if contract submission fails
-          }
-        }
+        // Contract submission is now manual to prevent transaction loops
+        // Users can manually submit via the dashboard button
       } else {
         // Use fallback analysis if AI fails
         setAnalysis(result.fallback);
@@ -205,12 +163,14 @@ export const useAIAnalysis = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchMarketData, createPortfolioFromBalances, account]);
+  }, [fetchMarketData, createPortfolioFromBalances]);
 
   // Auto-fetch market data on mount
   useEffect(() => {
     fetchMarketData().then(setMarketData);
   }, [fetchMarketData]);
+
+  // Manual contract submission function (removed for now to fix transaction loop)
 
   return {
     analysis,

@@ -1,7 +1,13 @@
 import { createThirdwebClient } from "thirdweb";
 
+const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
+
+if (!clientId) {
+  console.warn("NEXT_PUBLIC_THIRDWEB_CLIENT_ID is not set in environment variables");
+}
+
 export const client = createThirdwebClient({
-  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "demo-client-id",
+  clientId: clientId || "demo-client-id",
 });
 
 // Somnia Shannon Testnet configuration

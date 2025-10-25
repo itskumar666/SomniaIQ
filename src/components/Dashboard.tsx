@@ -10,17 +10,12 @@ import AIDemoPanel from "./AIDemoPanel";
 import PortfolioDashboard from "./PortfolioDashboard";
 import ContractStatus from "./ContractStatus";
 import DeploymentInfo from "./DeploymentInfo";
+import WalletStatus from "./WalletStatus";
+import NetworkSwitcher from "./NetworkSwitcher";
+import TransactionInfo from "./TransactionInfo";
+import ContractDiagnostics from "./ContractDiagnostics";
 
-// Proper Somnia testnet chain definition for ConnectButton
-const somniaChain = defineChain({
-  id: 50312,
-  rpc: "https://dream-rpc.somnia.network",
-  nativeCurrency: {
-    name: "STT",
-    symbol: "STT", 
-    decimals: 18,
-  },
-});
+// Chain configuration removed from ConnectButton to prevent permission loops
 
 export default function Dashboard() {
   const account = useActiveAccount();
@@ -40,6 +35,10 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen" style={{ color: 'white' }}>
+      <WalletStatus />
+      <NetworkSwitcher />
+      <TransactionInfo />
+      <ContractDiagnostics />
       {/* Header */}
       <header className="text-center mb-12">
         <div className="mb-6">
@@ -55,10 +54,13 @@ export default function Dashboard() {
         <div className="flex justify-center">
           <ConnectButton
             client={client}
-            chain={somniaChain}
+            connectModal={{
+              size: "compact",
+              title: "Connect Wallet",
+              showThirdwebBranding: false,
+            }}
             appMetadata={{
               name: "SomniaIQ",
-              url: "https://somniaiq.vercel.app",
               description: "AI-Powered DeFi Portfolio Manager",
             }}
           />
